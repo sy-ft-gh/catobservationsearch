@@ -118,10 +118,10 @@ namespace cat {
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
-        private dynamic CreateCatObservationsQuery(CatObservationSearch filter) {
+        private IQueryable<CatObservationDisplay> CreateCatObservationsQuery(CatObservationSearch filter) {
             // TODO: JOIN CatObservations And Cats
             var query = from co in CatCntext.CatObservations
-                        select new {
+                        select new CatObservationDisplay {
                             ObservateDate = co.ObservateDate,
                             ObservateTime = co.ObservateTime,
                             CatId = co.CatId,
@@ -165,7 +165,7 @@ namespace cat {
         /// Set Cat Observation List Task
         /// </summary>
         /// <param name="query"> select query </param>
-        private async Task<bool> GetCatObservationsAsyncTask(dynamic query, CancellationToken cancelToken) {
+        private async Task<bool> GetCatObservationsAsyncTask(IQueryable<CatObservationDisplay> query, CancellationToken cancelToken) {
             var context = SynchronizationContext.Current;
             return await Task.Run(() => {
                 logger.Info("GetCatObservationsAsyncTask - start");
@@ -180,20 +180,7 @@ namespace cat {
 #if DEBUG
                         Thread.Sleep(1000);
 #endif
-                        CatObservationDisplay dsp = new CatObservationDisplay();
-                        dsp.ObservateDate = cat.ObservateDate;
-                        dsp.ObservateTime = cat.ObservateTime;
-                        dsp.CatId = cat.CatId;
-                        dsp.CatName = cat.CatName;
-                        dsp.HairPattern = cat.HairPattern;
-                        dsp.Gender = cat.Gender;
-                        dsp.BodyType = cat.BodyType;
-                        dsp.FaceType = cat.FaceType;
-                        dsp.Age = cat.Age;
-                        dsp.Personality = cat.Personality;
-                        dsp.Country = cat.Country;
-                        dsp.Area = cat.Area;
-                        dspList.Add(dsp);
+                        dspList.Add(cat);
                     }
                     vm.CatObservations = dspList;
                     return true;
