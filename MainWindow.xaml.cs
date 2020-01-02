@@ -121,10 +121,12 @@ namespace cat {
         private dynamic CreateCatObservationsQuery(CatObservationSearch filter) {
             // TODO: JOIN CatObservations And Cats
             var query = from co in CatCntext.CatObservations
+                        join cm in CatCntext.Cats on co.CatId equals cm.CatId
+                        where cm.LostFlag == null
                         select new {
                             ObservateDate = co.ObservateDate,
                             ObservateTime = co.ObservateTime,
-                            CatId = co.CatId,
+                            CatId = cm.CatId,
                             CatName = co.CatName,
                             HairPattern = co.HairPattern,
                             Gender = co.Gender,
@@ -156,7 +158,36 @@ namespace cat {
                     break;
             }
             // TODO: Create Filter
-
+            if (filter.CatId > 0) {
+                query = query.Where(x => x.CatId == filter.CatId);
+            }
+            if (!string.IsNullOrEmpty(filter.CatName?.Trim())) {
+                query = query.Where(x => x.CatName.IndexOf(filter.CatName) >= 0);
+            }
+            if (!string.IsNullOrEmpty(filter.HairPattern?.Trim())) {
+                query = query.Where(x => x.HairPattern.IndexOf(filter.HairPattern) >= 0);
+            }
+            if (!string.IsNullOrEmpty(filter.FaceType?.Trim())) {
+                query = query.Where(x => x.FaceType.IndexOf(filter.FaceType) >= 0);
+            }
+            if (!string.IsNullOrEmpty(filter.Personality?.Trim())) {
+                query = query.Where(x => x.Personality.IndexOf(filter.Personality) >= 0);
+            }
+            if (!string.IsNullOrEmpty(filter.Country?.Trim())) {
+                query = query.Where(x => x.Country.IndexOf(filter.Country) >= 0);
+            }
+            if (!string.IsNullOrEmpty(filter.Area?.Trim())) {
+                query = query.Where(x => x.Area.IndexOf(filter.Area) >= 0);
+            }
+            if (filter.UseGender) {
+                query = query.Where(x => x.Gender == filter.Gender);
+            }
+            if (filter.UseBodyType) {
+                query = query.Where(x => x.BodyType == filter.BodyType);
+            }
+            if (filter.UseAge) {
+                query = query.Where(x => x.Age == filter.Age);
+            }
             query = query.OrderBy(x => x.ObservateDate).ThenBy(x => x.ObservateTime).ThenBy(x => x.CatId);
             return query;
 
@@ -200,6 +231,9 @@ namespace cat {
                 } finally {
                     logger.Info("GetCatObservationsAsyncTask - end");
                     // TODO: Touch UI Thread
+                    context.Post(__ => {
+                        btnSearch.IsEnabled = true;
+                    }, null);
                 }
             }, cancelToken);
         }
